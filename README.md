@@ -66,6 +66,6 @@ Durante o desenvolvimento, foram praticados:
 ---
 
 ## 👨‍💻 Autor
-asdhasdhaskjdhashkjda
+
 **João Mendonça**
 🔗 https://github.com/jv-mendonca
