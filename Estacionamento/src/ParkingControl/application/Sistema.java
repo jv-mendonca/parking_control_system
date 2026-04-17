@@ -151,7 +151,7 @@ public class Sistema {
         for (Estacionamento est : lista) {
             if (est.getTicket() == ticket && est.getSaida() == null) {
                 est.setSaida(LocalDateTime.now());
-                atualizarSaidaCSV(ticket);
+                atualizarSaidaCSV(ticket,est);
                 System.out.println("Saída registrada com sucesso!");
                 return;
             }
@@ -164,12 +164,14 @@ public class Sistema {
 
 
     // Atualiza saída no arquivo CSV
-    private void atualizarSaidaCSV(int ticketBusca) {
+    private void atualizarSaidaCSV(int ticketBusca, Estacionamento estAtualizado) {
         File arquivo = new File("entrada.csv");
         ArrayList<String> linhas = new ArrayList<>();
 
         try (BufferedReader br = new BufferedReader(new FileReader(arquivo))) {
             String linha;
+
+
 
             while ((linha = br.readLine()) != null) {
                 String[] dados = linha.split(";");
@@ -179,22 +181,14 @@ public class Sistema {
                     continue;
                 }
 
-                if (dados.length >= 8 &&
+                if (dados.length >= 9 &&
                         Integer.parseInt(dados[0]) == ticketBusca &&
                         dados[6].equals("EM ABERTO")) {
 
+                    dados[6] = estAtualizado.getSaida().format(formatter);
+                    dados[7] = estAtualizado.getTempoFormatado();
+                    dados[8] = String.format("R$ %.2f", estAtualizado.getValor());
 
-                    LocalDateTime saida = LocalDateTime.now();
-
-                    LocalDateTime entrada = LocalDateTime.parse(dados[5], formatter);
-
-                    Duration duracao = Duration.between(entrada,saida);
-
-                    long horas = duracao.toHours();
-                    long minutos = duracao.toMinutes() % 60;
-
-                    dados[6] = LocalDateTime.now().format(formatter);
-                    dados[7] = horas + "h " + minutos + "min";
 
                     linha = String.join(";", dados);
 
@@ -231,7 +225,7 @@ public class Sistema {
             FileWriter writer = new FileWriter(arquivo, true);
 
             if (precisaCabecalho) {
-                writer.append("Ticket;Nome;Modelo;Placa;Codigo;Entrada;Saida;Diferença\n");
+                writer.append("Ticket;Nome;Modelo;Placa;Codigo;Entrada;Saida;Diferenca;Valor a Pagar\n");
             }
 
             writer.append(String.valueOf(est.getTicket())).append(";");
@@ -241,7 +235,8 @@ public class Sistema {
             writer.append(String.valueOf(est.getCliente().getCodigoCliente())).append(";");
             writer.append(est.getEntrada().format(formatter)).append(";");
             writer.append("EM ABERTO").append(";");
-            writer.append("-").append("\n");
+            writer.append("-").append(";");
+            writer.append("R$0.0").append("\n");
 
             writer.close();
 

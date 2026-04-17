@@ -7,10 +7,9 @@ public class Estacionamento {
     private Cliente cliente;
     private Carro carro;
     private LocalDateTime entrada;
-    private  LocalDateTime saida;
-    private  int ticket;
+    private LocalDateTime saida;
+    private int ticket;
     private Duration duracao;
-
 
     public Estacionamento(Cliente cliente, Carro carro, LocalDateTime entrada, LocalDateTime saida, int ticket) {
         this.ticket = ticket;
@@ -18,10 +17,7 @@ public class Estacionamento {
         this.carro = carro;
         this.entrada = entrada;
         this.saida = saida;
-
     }
-
-
 
     public Cliente getCliente() {
         return cliente;
@@ -57,5 +53,32 @@ public class Estacionamento {
 
     public void setSaida(LocalDateTime saida) {
         this.saida = saida;
+    }
+
+    public double getValor() {
+        if (entrada == null || saida == null) {
+            return 0.0;
+        }
+
+        Duration duracao = Duration.between(entrada, saida);
+        long minutos = duracao.toMinutes();
+
+        if (minutos < 60) {
+            return 0.0;
+        }
+
+        return 10.0;
+    }
+
+    public String getTempoFormatado() {
+        if (entrada == null || saida == null) {
+            return "-";
+        }
+
+        Duration duracao = Duration.between(entrada, saida);
+        long horas = duracao.toHours();
+        long minutos = duracao.toMinutes() % 60;
+
+        return horas + "h " + minutos + "min";
     }
 }
