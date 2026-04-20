@@ -3,6 +3,9 @@ package ParkingControl.application;
 
 
 
+import ParkingControl.service.EstacionamentoService;
+import ParkingControl.ui.Menu;
+
 import java.util.Locale;
 import java.util.Scanner;
 
@@ -11,8 +14,8 @@ public class Main {
         Locale.setDefault(Locale.US);
         Scanner sc = new Scanner(System.in);
 
-        Sistema sistema = new Sistema();
-        sistema.executar();
+        Menu menu = new Menu();
+        menu.executar();
 
 
     }
