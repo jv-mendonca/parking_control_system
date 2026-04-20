@@ -63,11 +63,17 @@ public class Estacionamento {
         Duration duracao = Duration.between(entrada, saida);
         long minutos = duracao.toMinutes();
 
-        if (minutos < 60) {
-            return 0.0;
+        if (minutos <= 60) {
+            return 10.0;
         }
 
-        return 10.0;
+        long horasExtras = (minutos - 60) / 60;
+
+        if ((minutos - 60) % 60 != 0) {
+            horasExtras++;
+        }
+
+        return 10.0 + (horasExtras * 10.0);
     }
 
     public String getTempoFormatado() {

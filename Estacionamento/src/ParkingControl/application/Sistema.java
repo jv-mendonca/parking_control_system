@@ -53,7 +53,6 @@ public class Sistema {
     private void tratarOpcao(int opcao) {
         switch (opcao) {
             case 1:
-                System.out.println("Teste");
                 registrarEntrada();
                 break;
             case 2:
@@ -83,7 +82,7 @@ public class Sistema {
 
         while (carro == null){
             try {
-                System.out.println("Placa do carro: ");
+                System.out.print("Placa do carro: ");
                 String placaCarro = sc.nextLine();
 
                 if(placaJaExiste(placaCarro)){
@@ -91,7 +90,7 @@ public class Sistema {
                     continue;
                 }
                 // Cria carro (validação acontece na classe Carro)
-                 carro = new Carro(modeloCarro, placaCarro);
+                carro = new Carro(modeloCarro, placaCarro);
                 break;
             } catch (IllegalArgumentException e){
                 System.out.println(e.getMessage());
@@ -110,14 +109,12 @@ public class Sistema {
         lista.add(estacionamento);
 
         // Exibe ticket
+
         System.out.println("Veiculo Registrado");
-        System.out.println("=== TICKET GERADO ===");
-        System.out.println("Ticket: " + ticket);
-        System.out.println("Placa: " + carro.getPlaca());
-        System.out.println("Entrada: " + entrada.format(formatter));
+        exibirTicket(estacionamento);
 
 
-          // Salva no CSV
+        // Salva no CSV
         salvarEntradaCSV(estacionamento);
 
 
@@ -131,6 +128,7 @@ public class Sistema {
     private boolean placaJaExiste(String placa) {
         String placaNormalizada = normalizarPlaca(placa);
 
+        // verifica na lista em memória
         for (Estacionamento estacionamento : lista) {
             String placaLista = normalizarPlaca(estacionamento.getCarro().getPlaca());
 
@@ -138,6 +136,37 @@ public class Sistema {
                 return true;
             }
         }
+
+        // verifica também no CSV
+        File arquivo = new File("entrada.csv");
+
+        if (arquivo.exists()) {
+            try (BufferedReader br = new BufferedReader(new FileReader(arquivo))) {
+                String linha;
+
+                while ((linha = br.readLine()) != null) {
+                    String[] dados = linha.split(";");
+
+                    // pula cabeçalho
+                    if (dados[0].equals("Ticket")) {
+                        continue;
+                    }
+
+                    if (dados.length >= 7) {
+                        String placaArquivo = normalizarPlaca(dados[3]);
+                        String saida = dados[6];
+
+                        // só bloqueia se a mesma placa estiver EM ABERTO
+                        if (placaArquivo.equals(placaNormalizada) && saida.equalsIgnoreCase("EM ABERTO")) {
+                            return true;
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                System.out.println("Erro ao verificar placa no arquivo.");
+            }
+        }
+
         return false;
     }
 
@@ -156,8 +185,96 @@ public class Sistema {
                 return;
             }
         }
+        if(darBaixaTicketNoCSV(ticket)){
+            System.out.println("Saida registrada com sucesso!");
+        }else {
+            System.out.println("ticket nao encontrado");
+        }
 
-        System.out.println("Ticket não encontrado.");
+    }
+
+    private boolean darBaixaTicketNoCSV(int ticketBusca) {
+        File arquivo = new File("entrada.csv");
+        ArrayList<String> linhas = new ArrayList<>();
+
+        if (!arquivo.exists()) {
+            return false;
+        }
+
+        try (BufferedReader br = new BufferedReader(new FileReader(arquivo))) {
+            String linha;
+            boolean encontrado = false;
+
+            while ((linha = br.readLine()) != null) {
+                String[] dados = linha.split(";");
+
+                // mantém cabeçalho
+                if (dados[0].equals("Ticket")) {
+                    linhas.add(linha);
+                    continue;
+                }
+
+                if (dados.length >= 9 &&
+                        Integer.parseInt(dados[0]) == ticketBusca &&
+                        dados[6].equals("EM ABERTO")) {
+
+                    LocalDateTime entrada = LocalDateTime.parse(dados[5], formatter);
+                    LocalDateTime saida = LocalDateTime.now();
+
+                    Duration duracao = Duration.between(entrada, saida);
+
+                    Estacionamento estTemp = new Estacionamento(null, null, entrada, saida, ticketBusca);
+                    estTemp.getTempoFormatado();
+                    dados[6] = saida.format(formatter);
+                    dados[7] = estTemp.getTempoFormatado();
+                    dados[8] = String.format("R$ %.2f", estTemp.getValor());
+
+                    linha = String.join(";", dados);
+                    encontrado = true;
+                }
+
+                linhas.add(linha);
+            }
+
+            if (!encontrado) {
+                return false;
+            }
+
+        } catch (IOException e) {
+            System.out.println("Erro ao ler arquivo.");
+            return false;
+        }
+
+        try (FileWriter writer = new FileWriter(arquivo, false)) {
+            for (String l : linhas) {
+                writer.write(l + "\n");
+            }
+        } catch (IOException e) {
+            System.out.println("Feche o Excel antes de atualizar.");
+            return false;
+        }
+
+        return true;
+    }
+
+
+
+    private void exibirTicket(Estacionamento estacionamento){
+        System.out.println();
+        System.out.println("====================================");
+        System.out.println("         TICKET DE ENTRADA         ");
+        System.out.println("====================================");
+        System.out.println("Ticket : " + estacionamento.getTicket());
+        System.out.println("Cliente: " + estacionamento.getCliente().getNomeCliente());
+        System.out.println("Código : " + estacionamento.getCliente().getCodigoCliente());
+        System.out.println("Carro  : " + estacionamento.getCarro().getModelo());
+        System.out.println("Placa  : " + estacionamento.getCarro().getPlaca());
+        System.out.println("Entrada: " + estacionamento.getEntrada().format(formatter));
+        System.out.println("Status : EM ABERTO");
+        System.out.println("====================================");
+        System.out.println("Guarde este ticket para registrar a saída.");
+        System.out.println();
+
     }
 
 
@@ -210,6 +327,8 @@ public class Sistema {
             System.out.println("Feche o Excel antes de atualizar.");
         }
     }
+
+
 
 
 
