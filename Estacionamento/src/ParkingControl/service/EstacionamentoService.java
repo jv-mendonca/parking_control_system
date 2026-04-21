@@ -38,7 +38,7 @@ public class EstacionamentoService {
 
     public void registrarEntrada(String nome, String placaCarro, String modeloInformado) {
         int codigo = gerador.nextInt(9000) + 1000;
-        System.out.println("Código do cliente: " + codigo);
+
 
         if (!PlacaUtil.placaValida(placaCarro)) {
             System.out.println("Erro: placa inválida!");
@@ -56,6 +56,7 @@ public class EstacionamentoService {
             carro = new Carro(modeloInformado, placaCarro);
             carrosCadastrados.add(carro);
             System.out.println("Carro cadastrado com sucesso.");
+            System.out.println("Código do cliente: " + codigo);
         } else {
             System.out.println("Carro já cadastrado no sistema.");
             System.out.println("Modelo: " + carro.getModelo());
