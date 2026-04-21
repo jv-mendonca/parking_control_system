@@ -18,7 +18,20 @@ public class EstacionamentoService {
     private Random gerador = new Random();
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private EstacionamentoRepository repository = new EstacionamentoRepository();
-    String vaga = gerarVaga();
+
+
+    private static final int IDX_TICKET = 0;
+    private static final int IDX_NOME = 1;
+    private static final int IDX_MODELO = 2;
+    private static final int IDX_PLACA = 3;
+    private static final int IDX_CODIGO = 4;
+    private static final int IDX_VAGA = 5;
+    private static final int IDX_ENTRADA = 6;
+    private static final int IDX_SAIDA = 7;
+    private static final int IDX_DIFERENCA = 8;
+    private static final int IDX_VALOR = 9;
+
+
     public EstacionamentoService() {
         carregarDadosDoCSV();
     }
@@ -52,7 +65,7 @@ public class EstacionamentoService {
         Cliente cliente = new Cliente(nome, codigo);
         int ticket = gerador.nextInt(9000) + 1000;
         LocalDateTime entrada = LocalDateTime.now();
-
+        String vaga = gerarVaga();
 
 
         Estacionamento est = new Estacionamento(cliente, carro, entrada, null, ticket, vaga);
@@ -69,7 +82,7 @@ public class EstacionamentoService {
         do {
             char letra = (char) ('A' + gerador.nextInt(5));
             int numero = gerador.nextInt(20) + 1;
-            vaga = letra  + " - " + numero;
+            vaga = letra  + "-" + numero;
         } while (vagaOcupada(vaga));
 
         return vaga;
@@ -135,27 +148,48 @@ public class EstacionamentoService {
         ArrayList<String[]> dadosLista = repository.carregarLinhas();
 
         for (String[] dados : dadosLista) {
-            int ticket = Integer.parseInt(dados[0]);
-            String nome = dados[1];
-            String modelo = dados[2];
-            String placa = dados[3];
-            int codigo = Integer.parseInt(dados[4]);
-            LocalDateTime entrada = LocalDateTime.parse(dados[5], formatter);
+            try {
+                int ticket = Integer.parseInt(dados[IDX_TICKET].trim());
+                String nome = dados[IDX_NOME].trim();
+                String modelo = dados[IDX_MODELO].trim();
+                String placa = dados[IDX_PLACA].trim();
+                int codigo = Integer.parseInt(dados[IDX_CODIGO].trim());
+                String vaga = dados[IDX_VAGA].trim();
 
-            LocalDateTime saida = null;
-            if (!dados[6].trim().equalsIgnoreCase("EM ABERTO")) {
-                saida = LocalDateTime.parse(dados[6], formatter);
+                LocalDateTime entrada = LocalDateTime.parse(
+                        dados[IDX_ENTRADA].trim(), formatter
+                );
+
+                LocalDateTime saida = null;
+                if (!dados[IDX_SAIDA].trim().equalsIgnoreCase("EM ABERTO")) {
+                    saida = LocalDateTime.parse(
+                            dados[IDX_SAIDA].trim(), formatter
+                    );
+                }
+
+                // reutiliza carro já cadastrado
+                Carro carro = buscarCarroPorPlaca(placa);
+                if (carro == null) {
+                    carro = new Carro(modelo, placa);
+                    carrosCadastrados.add(carro);
+                }
+
+                Cliente cliente = new Cliente(nome, codigo);
+
+                Estacionamento est = new Estacionamento(
+                        cliente,
+                        carro,
+                        entrada,
+                        saida,
+                        ticket,
+                        vaga
+                );
+
+                lista.add(est);
+
+            } catch (Exception e) {
+                System.out.println("Erro ao carregar linha do CSV.");
             }
-
-            Carro carro = buscarCarroPorPlaca(placa);
-            if (carro == null) {
-                carro = new Carro(modelo, placa);
-                carrosCadastrados.add(carro);
-            }
-
-            Cliente cliente = new Cliente(nome, codigo);
-            Estacionamento est = new Estacionamento(cliente, carro, entrada, saida, ticket, vaga);
-            lista.add(est);
         }
     }
 

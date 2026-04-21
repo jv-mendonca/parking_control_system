@@ -6,7 +6,19 @@ import java.io.*;
 import java.util.ArrayList;
 
 public class EstacionamentoRepository {
+
     private final String arquivoNome = "entrada.csv";
+
+    private static final int IDX_TICKET = 0;
+    private static final int IDX_NOME = 1;
+    private static final int IDX_MODELO = 2;
+    private static final int IDX_PLACA = 3;
+    private static final int IDX_CODIGO = 4;
+    private static final int IDX_VAGA = 5;
+    private static final int IDX_ENTRADA = 6;
+    private static final int IDX_SAIDA = 7;
+    private static final int IDX_DIFERENCA = 8;
+    private static final int IDX_VALOR = 9;
 
     public void salvarEntrada(Estacionamento est, String entradaFormatada) {
         File arquivo = new File(arquivoNome);
@@ -48,18 +60,18 @@ public class EstacionamentoRepository {
             while ((linha = br.readLine()) != null) {
                 String[] dados = linha.split(";");
 
-                if (dados[0].equals("Ticket")) {
+                if (dados[IDX_TICKET].trim().equals("Ticket")) {
                     linhas.add(linha);
                     continue;
                 }
 
-                if (dados.length >= 9 &&
-                        Integer.parseInt(dados[0]) == ticketBusca &&
-                        dados[6].trim().equalsIgnoreCase("EM ABERTO")) {
+                if (dados.length >= 10 &&
+                        Integer.parseInt(dados[IDX_TICKET].trim()) == ticketBusca &&
+                        dados[IDX_SAIDA].trim().equalsIgnoreCase("EM ABERTO")) {
 
-                    dados[7] = saidaFormatada;
-                    dados[8] = tempoFormatado;
-                    dados[9] = String.format("R$ %.2f", valor);
+                    dados[IDX_SAIDA] = saidaFormatada;
+                    dados[IDX_DIFERENCA] = tempoFormatado;
+                    dados[IDX_VALOR] = String.format("R$ %.2f", valor);
 
                     linha = String.join(";", dados);
                 }
@@ -94,13 +106,13 @@ public class EstacionamentoRepository {
             while ((linha = br.readLine()) != null) {
                 String[] dados = linha.split(";");
 
-                if (dados[0].equals("Ticket")) {
+                if (dados[IDX_TICKET].trim().equals("Ticket")) {
                     continue;
                 }
 
-                if (dados.length >= 7) {
-                    String placaArquivo = dados[3].toUpperCase().trim().replaceAll("[^A-Z0-9]", "");
-                    String saida = dados[6].trim();
+                if (dados.length >= 10) {
+                    String placaArquivo = dados[IDX_PLACA].trim().toUpperCase().replaceAll("[^A-Z0-9]", "");
+                    String saida = dados[IDX_SAIDA].trim();
 
                     if (placaArquivo.equals(placaNormalizada) && saida.equalsIgnoreCase("EM ABERTO")) {
                         return true;
@@ -129,11 +141,14 @@ public class EstacionamentoRepository {
             while ((linha = br.readLine()) != null) {
                 String[] dados = linha.split(";");
 
-                if (dados[0].equals("Ticket")) {
+                if (dados[IDX_TICKET].trim().equals("Ticket")) {
                     continue;
                 }
 
-                if (dados.length >= 9) {
+                if (dados.length >= 10) {
+                    for (int i = 0; i < dados.length; i++) {
+                        dados[i] = dados[i].trim();
+                    }
                     dadosLista.add(dados);
                 }
             }
