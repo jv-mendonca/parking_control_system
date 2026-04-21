@@ -17,7 +17,7 @@ public class EstacionamentoRepository {
             FileWriter writer = new FileWriter(arquivo, true);
 
             if (precisaCabecalho) {
-                writer.append("Ticket;Nome;Modelo;Placa;Codigo;Entrada;Saida;Diferenca;Valor a Pagar\n");
+                writer.append("Ticket;Nome;Modelo;Placa;Codigo;Vaga;Entrada;Saida;Diferenca;Valor a Pagar\n");
             }
 
             writer.append(String.valueOf(est.getTicket())).append(";");
@@ -25,6 +25,7 @@ public class EstacionamentoRepository {
             writer.append(est.getCarro().getModelo()).append(";");
             writer.append(est.getCarro().getPlaca()).append(";");
             writer.append(String.valueOf(est.getCliente().getCodigoCliente())).append(";");
+            writer.append(est.getVaga()).append(";");
             writer.append(entradaFormatada).append(";");
             writer.append("EM ABERTO").append(";");
             writer.append("-").append(";");
@@ -56,9 +57,9 @@ public class EstacionamentoRepository {
                         Integer.parseInt(dados[0]) == ticketBusca &&
                         dados[6].trim().equalsIgnoreCase("EM ABERTO")) {
 
-                    dados[6] = saidaFormatada;
-                    dados[7] = tempoFormatado;
-                    dados[8] = String.format("R$ %.2f", valor);
+                    dados[7] = saidaFormatada;
+                    dados[8] = tempoFormatado;
+                    dados[9] = String.format("R$ %.2f", valor);
 
                     linha = String.join(";", dados);
                 }

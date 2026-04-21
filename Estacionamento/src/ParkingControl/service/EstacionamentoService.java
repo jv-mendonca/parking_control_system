@@ -18,7 +18,7 @@ public class EstacionamentoService {
     private Random gerador = new Random();
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private EstacionamentoRepository repository = new EstacionamentoRepository();
-
+    String vaga = gerarVaga();
     public EstacionamentoService() {
         carregarDadosDoCSV();
     }
@@ -53,13 +53,35 @@ public class EstacionamentoService {
         int ticket = gerador.nextInt(9000) + 1000;
         LocalDateTime entrada = LocalDateTime.now();
 
-        Estacionamento est = new Estacionamento(cliente, carro, entrada, null, ticket);
+
+
+        Estacionamento est = new Estacionamento(cliente, carro, entrada, null, ticket, vaga);
         lista.add(est);
 
         repository.salvarEntrada(est, entrada.format(formatter));
 
         System.out.println("Entrada registrada com sucesso!");
         exibirTicket(est);
+    }
+
+    private String gerarVaga() {
+        String vaga;
+        do {
+            char letra = (char) ('A' + gerador.nextInt(5));
+            int numero = gerador.nextInt(20) + 1;
+            vaga = letra  + " - " + numero;
+        } while (vagaOcupada(vaga));
+
+        return vaga;
+    }
+
+    private boolean vagaOcupada(String vaga) {
+        for (Estacionamento est : lista) {
+            if (est.getSaida() == null && est.getVaga().equalsIgnoreCase(vaga)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void registrarSaida(int ticket) {
@@ -132,7 +154,7 @@ public class EstacionamentoService {
             }
 
             Cliente cliente = new Cliente(nome, codigo);
-            Estacionamento est = new Estacionamento(cliente, carro, entrada, saida, ticket);
+            Estacionamento est = new Estacionamento(cliente, carro, entrada, saida, ticket, vaga);
             lista.add(est);
         }
     }
@@ -147,6 +169,7 @@ public class EstacionamentoService {
         System.out.println("Código : " + estacionamento.getCliente().getCodigoCliente());
         System.out.println("Carro  : " + estacionamento.getCarro().getModelo());
         System.out.println("Placa  : " + estacionamento.getCarro().getPlaca());
+        System.out.println("Vaga   : " + estacionamento.getVaga());
         System.out.println("Entrada: " + estacionamento.getEntrada().format(formatter));
         System.out.println("Status : EM ABERTO");
         System.out.println("====================================");

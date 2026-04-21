@@ -10,13 +10,16 @@ public class Estacionamento {
     private LocalDateTime saida;
     private int ticket;
     private Duration duracao;
+    private String vaga;
 
-    public Estacionamento(Cliente cliente, Carro carro, LocalDateTime entrada, LocalDateTime saida, int ticket) {
+
+    public Estacionamento(Cliente cliente, Carro carro, LocalDateTime entrada, LocalDateTime saida, int ticket, String vaga) {
         this.ticket = ticket;
         this.cliente = cliente;
         this.carro = carro;
         this.entrada = entrada;
         this.saida = saida;
+        this.vaga =  vaga;
     }
 
     public Cliente getCliente() {
@@ -75,6 +78,15 @@ public class Estacionamento {
 
         return 10.0 + (horasExtras * 10.0);
     }
+
+    public String getVaga() {
+        return vaga;
+    }
+
+    public void setVaga(String vaga) {
+        this.vaga = vaga;
+    }
+
 
     public String getTempoFormatado() {
         if (entrada == null || saida == null) {
